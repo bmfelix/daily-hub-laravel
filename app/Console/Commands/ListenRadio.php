@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Services\Radio\RadioListener;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
+use Illuminate\Console\Command;
+use Throwable;
+
+#[Signature('radio:listen {--interval=15 : Seconds between checks}')]
+#[Description('Check the radio stations on a timer and broadcast song changes to open homepages.')]
+class ListenRadio extends Command
+{
+    public function handle(RadioListener $listener): void
+    {
+        $interval = (float) $this->option('interval');
+        $this->info("Listening for song changes every {$interval} seconds.");
+
+        while (true) {
+            try {
+                if ($listener->check()) {
+                    $this->line("Broadcast: {$listener->lastSeen}");
+                }
+            } catch (Throwable $error) {
+                // Keep listening through any one bad check.
+                $this->error('Check failed: '.$error->getMessage());
+            }
+            usleep((int) ($interval * 1_000_000));
+        }
+    }
+}

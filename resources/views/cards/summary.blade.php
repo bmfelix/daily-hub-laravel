@@ -1,0 +1,1 @@
+<p>{{ $module->summary }}</p>
