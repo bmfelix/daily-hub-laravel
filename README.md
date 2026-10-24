@@ -38,6 +38,16 @@ Two Reverb addresses are configured: `REVERB_HOST`/`REVERB_PORT` is how the app 
 
 Note: Reverb 1.12 needs Guzzle 7, so Guzzle is held at 7 until a Reverb release supports Guzzle 8.
 
+## Artist pages
+
+Click an artist on the homepage card or the Radio page to see everything MusicBrainz has on them: photo, origin, active years, rating, genres, members (with roles and years), the full discography with cover art, links (listen, official, social, concerts, buy, reference), aliases, related artists, and identifiers.
+
+- **Fetched once, then saved** in Postgres: `artists` (the full MusicBrainz record and every release) and `artist_names` (which radio name matched which artist, including names with no match). Saved artists are refreshed after 30 days; unmatched names are retried after 7. See `App\Services\MusicBrainz\ArtistLibrary`.
+- **Fetched ahead of time.** `radio:listen` looks up each artist as their song comes on, so most clicks open instantly. If a lookup is still needed, the page shows a "please wait" overlay.
+- **Polite to MusicBrainz** (`MusicBrainzClient`): every request names the app and a contact address, requests are at least 1.1 seconds apart, and a "slow down" reply (503) is retried once.
+- **Careful matching** (`Names`): a result must match the name or an alias. For "A [+] B" or "A, B & C", the full name is tried first, then the first artist.
+- Photos come from Wikimedia Commons and covers from the Cover Art Archive; both are linked from MusicBrainz.
+
 ## Run with Docker
 
 1. `cp .env.example .env`, then set `DB_PASSWORD`, an `APP_KEY` (`php artisan key:generate --show` prints one), and random values for `REVERB_APP_ID`, `REVERB_APP_KEY`, and `REVERB_APP_SECRET`.

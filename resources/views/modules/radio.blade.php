@@ -19,7 +19,7 @@
                 <div>
                   <span class="meta">{{ $track['playing'] ? 'Now playing' : \Illuminate\Support\Carbon::createFromTimestamp($track['start'], 'America/New_York')->format('g:i A') }}</span>
                   <strong>{{ $track['title'] }}</strong>
-                  <span>{{ $track['artist'] }}</span>
+                  <a class="artist-link" href="{{ route('artists.lookup', ['name' => $track['artist']]) }}">{{ $track['artist'] }}</a>
                 </div>
               </li>
             @empty

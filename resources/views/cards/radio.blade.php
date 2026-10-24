@@ -7,7 +7,7 @@
         <span class="meta">{{ $item['station']->name }} · {{ $track ? ($track['playing'] ? 'Now playing' : 'Last played') : 'Unavailable' }}</span>
         @if ($track)
           <strong>{{ $track['title'] }}</strong>
-          <span>{{ $track['artist'] }}</span>
+          <a class="artist-link" href="{{ route('artists.lookup', ['name' => $track['artist']]) }}">{{ $track['artist'] }}</a>
         @else
           <span>{{ $item['error'] ?? 'No songs yet.' }}</span>
         @endif

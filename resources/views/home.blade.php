@@ -8,10 +8,10 @@
 
   <div class="cards">
     @foreach ($cards as $card)
-      <a class="card" href="{{ $card['module']->url() }}">
-        <h2>{{ $card['module']->title }}</h2>
+      <div class="card">
+        <h2><a class="card-link" href="{{ $card['module']->url() }}">{{ $card['module']->title }}</a></h2>
         @include($card['view'], ['module' => $card['module'], ...$card['data']])
-      </a>
+      </div>
     @endforeach
   </div>
 

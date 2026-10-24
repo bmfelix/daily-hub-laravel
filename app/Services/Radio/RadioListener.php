@@ -14,6 +14,9 @@ class RadioListener
 {
     public ?string $lastSeen = null;
 
+    /** @var array{stations: list<array<string, mixed>>}|null */
+    public ?array $lastCard = null;
+
     public function __construct(private RadioModule $radio) {}
 
     /**
@@ -22,6 +25,7 @@ class RadioListener
     public function check(): bool
     {
         $card = $this->radio->card();
+        $this->lastCard = $card;
         $seen = $this->signature($card);
         if ($seen === $this->lastSeen) {
             return false;
@@ -31,6 +35,18 @@ class RadioListener
         $this->lastSeen = $seen;
 
         return true;
+    }
+
+    /**
+     * The artist names on air at the last check.
+     *
+     * @return list<string>
+     */
+    public function currentArtists(): array
+    {
+        return collect($this->lastCard['stations'] ?? [])
+            ->map(fn (array $item) => $item['tracks'][0]['artist'] ?? null)
+            ->filter()->values()->all();
     }
 
     /**
