@@ -18,6 +18,6 @@ class BuiltModule extends HubModule
 
     public function load(Request $request): array
     {
-        return [];
+        return ['sites' => config('hub.sites')];
     }
 }

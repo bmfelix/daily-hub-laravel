@@ -12,7 +12,7 @@
     <h2>Three builds</h2>
     <div class="table-scroll">
       <table class="compare">
-        <thead><tr><th scope="col"></th><th scope="col">Django</th><th scope="col">Next.js</th><th scope="col">Laravel</th></tr></thead>
+        <thead><tr><th scope="col"></th>@foreach ($sites as $name => $url)<th scope="col">@if ($url)<a href="{{ $url }}">{{ $name }}</a>@else{{ $name }}@endif</th>@endforeach</tr></thead>
         <tbody>
           <tr><th scope="row">Language</th><td>Python</td><td>TypeScript</td><td>PHP</td></tr>
           <tr><th scope="row">Framework</th><td>Django 6</td><td>Next.js 16, React 19</td><td>Laravel 13</td></tr>

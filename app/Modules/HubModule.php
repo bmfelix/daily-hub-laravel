@@ -4,8 +4,6 @@ namespace App\Modules;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * One Daily Hub page. Each subclass is one menu link and owns its API calls.
@@ -58,13 +56,5 @@ abstract class HubModule
     public function card(): array
     {
         return [];
-    }
-
-    /**
-     * Handle a form post. Modules without forms keep this default.
-     */
-    public function submit(Request $request): SymfonyResponse
-    {
-        abort(Response::HTTP_METHOD_NOT_ALLOWED);
     }
 }

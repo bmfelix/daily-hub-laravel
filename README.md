@@ -24,7 +24,7 @@ Modules can also give the homepage a live card instead of their summary. Each st
 
 ## How it is built
 
-- `app/Modules/HubModule.php` defines the abstract `HubModule` class. Each module returns its page data from `load()`. Modules with forms also override `submit()`.
+- `app/Modules/HubModule.php` defines the abstract `HubModule` class. Each module returns its page data from `load()`. Pages are read-only, so the only routes are GET.
 - API modules get a client class (for example `App\Services\OpenMeteoClient`) through constructor injection. The clients use Laravel's `Http` client, so tests replace every call with `Http::fake()` and run without the internet.
 - `config/hub.php` holds the module list. `App\Modules\ModuleRegistry` builds the modules from it, and the routes, the menu, and the homepage cards all come from the registry. To add a page, write a module class and a Blade view in `resources/views/modules/`, then add the class to `config/hub.php`.
 - The menu collapses into a "Menu" button below 1040px wide.
@@ -64,7 +64,7 @@ Click an artist on the homepage card or the Radio page to see everything MusicBr
 - **Agenda** reads iCal calendar links from `CALENDAR_URLS`, separated by commas. It is public on this build, because there is no login, so only add calendars you are happy to share.
 - **Spotify** on the homepage shows playlists from `SPOTIFY_PLAYLIST_URL` (several, separated by commas) and what is playing, with top artists and tracks on the Listening page.
 
-There is no login or admin area. To-dos and notes can be changed by anyone who can reach the site. The About page is edited in `config/hub.php`.
+There is no login or admin area. To-dos and notes are read-only: nobody can add, change, or delete them from the site, and their data is meant to arrive from an outside API. The About page is edited in `config/hub.php`.
 
 To connect Spotify, add `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` to `.env`, add `http://127.0.0.1:8002/spotify/callback` as a redirect URI on your Spotify app, then run `docker compose exec web php artisan spotify:connect` and open the link it prints. `php artisan artists:update` fills in artists saved before these features existed.
 
@@ -82,6 +82,8 @@ Everything here is optional. A feature without its setting explains itself on th
 | `GITHUB_USERNAME` | Recent work on the About page | Your GitHub username |
 
 Treat calendar links like passwords: anyone who has one can read that calendar.
+
+`DJANGO_SITE_URL`, `NEXTJS_SITE_URL`, and `LARAVEL_SITE_URL` turn the headings on the How it's built page into links to each live site. A heading stays plain text if its address is empty.
 
 ## Design
 

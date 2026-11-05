@@ -300,13 +300,22 @@ class MusicFeaturesTest extends TestCase
         $this->get('/todo?card=1')->assertSee('<html', false);
     }
 
-    public function test_anyone_can_change_tasks_and_notes(): void
+    public function test_tasks_and_notes_cannot_be_changed_from_the_pages(): void
     {
-        $this->post('/todo', ['action' => 'add', 'title' => 'Open']);
-        $this->post('/notes', ['action' => 'save', 'title' => 'Mine', 'body' => '']);
+        $this->post('/todo', ['action' => 'add', 'title' => 'Open'])->assertStatus(405);
+        $this->post('/notes', ['action' => 'save', 'title' => 'Mine'])->assertStatus(405);
 
-        $this->assertTrue(Task::where('title', 'Open')->exists());
-        $this->assertTrue(Note::where('title', 'Mine')->exists());
+        $this->assertSame(0, Task::count());
+        $this->assertSame(0, Note::count());
+    }
+
+    public function test_task_and_note_pages_have_no_forms(): void
+    {
+        Task::create(['title' => 'Buy milk']);
+        $note = Note::create(['title' => 'Idea', 'body' => 'Some text']);
+
+        $this->get('/todo')->assertSee('Buy milk')->assertDontSee('name="action"', false);
+        $this->get("/notes?note={$note->id}")->assertSee('Some text')->assertDontSee('<textarea', false);
     }
 
     public function test_there_is_no_admin_area_or_login(): void
@@ -581,6 +590,16 @@ class MusicFeaturesTest extends TestCase
 
         Cache::flush();
         Http::fake(['*' => Http::response(null, 503)]);
+    }
+
+    public function test_built_page_headings_link_to_each_live_site(): void
+    {
+        config(['hub.sites' => ['Django' => 'https://one.test', 'Next.js' => 'https://two.test', 'Laravel' => '']]);
+
+        $this->get('/built')
+            ->assertSee('<a href="https://one.test">Django</a>', false)
+            ->assertSee('<a href="https://two.test">Next.js</a>', false)
+            ->assertSee('<th scope="col">Laravel</th>', false);
     }
 
     public function test_built_page_is_in_the_footer_not_the_menu(): void
