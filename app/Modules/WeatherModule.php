@@ -29,18 +29,32 @@ class WeatherModule extends HubModule
         95 => 'Thunderstorm', 96 => 'Thunderstorm with hail', 99 => 'Thunderstorm with hail',
     ];
 
+    /** Countries and territories that report the weather in Fahrenheit. */
+    private const FAHRENHEIT_COUNTRIES = ['US', 'PR', 'GU', 'VI', 'AS', 'MP', 'BS', 'BZ', 'KY', 'LR', 'PW', 'FM', 'MH'];
+
     public function __construct(private OpenMeteoClient $client) {}
 
     public function load(Request $request): array
     {
-        $city = trim((string) $request->query('city')) ?: $this->defaultCity;
+        $searched = trim((string) $request->query('city'));
+        $coordinates = $searched === '' ? $this->coordinates($request) : null;
+        $city = $coordinates ? '' : ($searched ?: $this->defaultCity);
 
         try {
-            $place = $this->client->findPlace($city);
-            if ($place === null) {
-                return ['city' => $city, 'error' => "No place found called “{$city}”."];
+            if ($coordinates) {
+                $place = $this->client->placeAt(...$coordinates);
+                if ($place === null) {
+                    return ['city' => $city, 'error' => 'No town found near your location.'];
+                }
+                $city = $place['name'];
+            } else {
+                $place = $this->client->findPlace($city);
+                if ($place === null) {
+                    return ['city' => $city, 'error' => "No place found called “{$city}”."];
+                }
             }
-            $data = $this->client->forecast($place['latitude'], $place['longitude']);
+            $imperial = in_array($place['country_code'] ?? null, self::FAHRENHEIT_COUNTRIES, true);
+            $data = $this->client->forecast($place['latitude'], $place['longitude'], $imperial);
         } catch (ConnectionException|RequestException) {
             return ['city' => $city, 'error' => 'The weather service did not respond. Try again shortly.'];
         }
@@ -61,6 +75,8 @@ class WeatherModule extends HubModule
         return [
             'city' => $city,
             'place' => $place,
+            'temperature_unit' => $imperial ? '°F' : '°C',
+            'wind_unit' => $imperial ? 'mph' : 'km/h',
             'current' => [
                 'temperature' => $current['temperature_2m'],
                 'feels_like' => $current['apparent_temperature'],
@@ -69,6 +85,24 @@ class WeatherModule extends HubModule
             ],
             'days' => $days,
         ];
+    }
+
+    /**
+     * The visitor's position from the URL, or null if it is missing or invalid.
+     *
+     * @return array{float, float}|null
+     */
+    private function coordinates(Request $request): ?array
+    {
+        $latitude = $request->query('lat');
+        $longitude = $request->query('lon');
+        if (! is_numeric($latitude) || ! is_numeric($longitude)) {
+            return null;
+        }
+
+        return abs((float) $latitude) <= 90 && abs((float) $longitude) <= 180
+            ? [(float) $latitude, (float) $longitude]
+            : null;
     }
 
     private function label(int $code): string
