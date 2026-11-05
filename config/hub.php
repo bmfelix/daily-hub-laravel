@@ -59,6 +59,13 @@ return [
 
     'github_username' => env('GITHUB_USERNAME', 'bmfelix'),
 
+    // Where each build runs, for the How it's built page. Empty leaves a heading as plain text.
+    'sites' => [
+        'Django' => env('DJANGO_SITE_URL', ''),
+        'Next.js' => env('NEXTJS_SITE_URL', ''),
+        'Laravel' => env('LARAVEL_SITE_URL', ''),
+    ],
+
     /*
     | The About page. There is no admin area, so edit it here.
     */

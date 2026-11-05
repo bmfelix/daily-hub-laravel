@@ -7,7 +7,6 @@ use App\Modules\ModuleRegistry;
 use App\Services\SpotifyClient;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class ModuleController extends Controller
 {
@@ -27,11 +26,6 @@ class ModuleController extends Controller
     public function show(Request $request, string $slug): View
     {
         return $this->module($slug)->show($request);
-    }
-
-    public function submit(Request $request, string $slug): Response
-    {
-        return $this->module($slug)->submit($request);
     }
 
     private function module(string $slug): HubModule

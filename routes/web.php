@@ -17,5 +17,4 @@ Route::get('/spotify/callback', [SpotifyController::class, 'callback'])->name('s
 // One page per module in config/hub.php.
 foreach (app(ModuleRegistry::class)->all() as $slug => $module) {
     Route::get("/{$slug}", [ModuleController::class, 'show'])->defaults('slug', $slug)->name("modules.{$slug}");
-    Route::post("/{$slug}", [ModuleController::class, 'submit'])->defaults('slug', $slug);
 }
