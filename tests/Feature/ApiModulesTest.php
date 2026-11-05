@@ -17,6 +17,11 @@ class ApiModulesTest extends TestCase
             'geocoding-api.open-meteo.com/*' => fn (Request $request) => str_contains($request->url(), 'Nowhere')
                 ? Http::response(['generationtime_ms' => 0.1])
                 : Http::response(['results' => [['name' => 'Paris', 'country' => 'France', 'latitude' => 48.85, 'longitude' => 2.35]]]),
+            'nominatim.openstreetmap.org/*' => fn (Request $request) => str_contains($request->url(), 'lat=0')
+                ? Http::response(['error' => 'Unable to geocode'])
+                : Http::response(['name' => 'Chicago', 'address' => [
+                    'city' => 'Chicago', 'country' => 'United States', 'country_code' => 'us',
+                ]]),
             'api.open-meteo.com/*' => Http::response([
                 'current' => ['temperature_2m' => 9.2, 'apparent_temperature' => 7, 'wind_speed_10m' => 12, 'weather_code' => 3],
                 'daily' => [
@@ -50,8 +55,82 @@ class ApiModulesTest extends TestCase
             ->assertOk()
             ->assertSee('Paris, France')
             ->assertSee('9.2°C')
+            ->assertSee('12 km/h')
             ->assertSee('Overcast')
             ->assertSee('Light rain');
+
+        Http::assertSent(fn (Request $request) => str_contains($request->url(), 'temperature_unit=celsius'));
+    }
+
+    public function test_weather_uses_fahrenheit_and_mph_in_the_united_states(): void
+    {
+        Http::fake([
+            'geocoding-api.open-meteo.com/*' => Http::response(['results' => [[
+                'name' => 'Chicago', 'country' => 'United States', 'country_code' => 'US',
+                'latitude' => 41.85, 'longitude' => -87.65,
+            ]]]),
+            'api.open-meteo.com/*' => Http::response([
+                'current' => ['temperature_2m' => 48.6, 'apparent_temperature' => 44, 'wind_speed_10m' => 7.5, 'weather_code' => 3],
+                'daily' => [
+                    'time' => ['2026-10-24'],
+                    'weather_code' => [0],
+                    'temperature_2m_max' => [57],
+                    'temperature_2m_min' => [41],
+                ],
+            ]),
+        ]);
+
+        $this->get('/weather?city=Chicago')
+            ->assertOk()
+            ->assertSee('48.6°F')
+            ->assertSee('7.5 mph')
+            ->assertDontSee('°C')
+            ->assertDontSee('km/h');
+
+        Http::assertSent(fn (Request $request) => str_contains($request->url(), 'temperature_unit=fahrenheit')
+            && str_contains($request->url(), 'wind_speed_unit=mph'));
+    }
+
+    public function test_weather_uses_the_visitors_location(): void
+    {
+        $this->fakeWeather();
+
+        $this->get('/weather?lat=41.85&lon=-87.65')
+            ->assertOk()
+            ->assertSee('Chicago, United States')
+            ->assertDontSee('getCurrentPosition');
+
+        Http::assertSent(fn (Request $request) => str_contains($request->url(), 'temperature_unit=fahrenheit'));
+    }
+
+    public function test_weather_prefers_a_searched_city_over_the_visitors_location(): void
+    {
+        $this->fakeWeather();
+
+        $this->get('/weather?city=Paris&lat=41.85&lon=-87.65')->assertSee('Paris, France');
+    }
+
+    public function test_weather_uses_the_default_city_for_invalid_coordinates(): void
+    {
+        $this->fakeWeather();
+
+        $this->get('/weather?lat=north&lon=999')->assertOk();
+        Http::assertSent(fn (Request $request) => str_contains($request->url(), 'name=London'));
+    }
+
+    public function test_weather_reports_no_place_at_the_visitors_location(): void
+    {
+        $this->fakeWeather();
+
+        $this->get('/weather?lat=0&lon=-30')->assertSee('No town found');
+    }
+
+    public function test_weather_asks_for_a_location_only_when_no_city_is_chosen(): void
+    {
+        $this->fakeWeather();
+
+        $this->get('/weather')->assertSee('getCurrentPosition');
+        $this->get('/weather?city=Paris')->assertDontSee('getCurrentPosition');
     }
 
     public function test_weather_uses_the_default_city(): void
