@@ -21,6 +21,13 @@ abstract class HubModule
     /** The Blade view for this module's homepage card. */
     public string $cardView = 'cards.summary';
 
+    /** True: the homepage loads this module's own card after the page opens. */
+    public bool $liveCard = false;
+
+    public bool $inMenu = true;
+
+    public bool $onHome = true;
+
     /**
      * Return the data the page needs. Subclasses call their API here.
      *
@@ -38,7 +45,9 @@ abstract class HubModule
 
     public function show(Request $request): View
     {
-        return view("modules.{$this->slug}", ['module' => $this, ...$this->load($request)]);
+        $view = $this->liveCard && $request->has('card') ? "cards.{$this->slug}-live" : "modules.{$this->slug}";
+
+        return view($view, ['module' => $this, ...$this->load($request)]);
     }
 
     /**

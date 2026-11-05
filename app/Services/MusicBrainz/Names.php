@@ -31,6 +31,22 @@ class Names
     }
 
     /**
+     * Like normalize, and ignores spaces too, so "3AM" and "3 AM" are the same.
+     */
+    public static function compact(string $name): string
+    {
+        return str_replace(' ', '', self::normalize($name));
+    }
+
+    /**
+     * The same song however a station spells it.
+     */
+    public static function songKey(string $artist, string $title): string
+    {
+        return substr(self::compact($artist).'|'.self::compact($title), 0, 400);
+    }
+
+    /**
      * The key a radio name is saved under.
      */
     public static function key(string $name): string

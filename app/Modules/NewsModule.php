@@ -13,6 +13,8 @@ class NewsModule extends HubModule
 
     public string $title = 'News';
 
+    public bool $liveCard = true;
+
     public string $summary = 'Top headlines from the Hacker News front page.';
 
     public function __construct(private HackerNewsClient $client) {}

@@ -15,6 +15,8 @@ class WeatherModule extends HubModule
 
     public string $summary = 'Current conditions and a 5-day forecast for any city.';
 
+    public bool $liveCard = true;
+
     public string $defaultCity = 'London';
 
     /** WMO weather codes used by Open-Meteo, grouped into plain labels. */
@@ -62,13 +64,22 @@ class WeatherModule extends HubModule
         $current = $data['current'];
         $daily = $data['daily'];
 
+        $coldest = min($daily['temperature_2m_min']);
+        $spread = (max($daily['temperature_2m_max']) - $coldest) ?: 1;
+
         $days = [];
         foreach ($daily['time'] as $i => $date) {
+            $high = $daily['temperature_2m_max'][$i];
+            $low = $daily['temperature_2m_min'][$i];
             $days[] = [
                 'date' => $date,
+                'weekday' => date('D', strtotime($date)),
                 'label' => $this->label($daily['weather_code'][$i]),
-                'high' => $daily['temperature_2m_max'][$i],
-                'low' => $daily['temperature_2m_min'][$i],
+                'high' => $high,
+                'low' => $low,
+                // Where this day's range sits on a bar covering the whole week.
+                'bar_start' => (int) round(($low - $coldest) / $spread * 100),
+                'bar_width' => (int) round(($high - $low) / $spread * 100),
             ];
         }
 

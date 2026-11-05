@@ -3,6 +3,7 @@
 @section('title', $module->title)
 
 @section('content')
+  <p class="kicker">The set list</p>
   <h1>{{ $module->title }}</h1>
 
   <form class="inline-form" method="post">

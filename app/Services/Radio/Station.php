@@ -13,6 +13,11 @@ abstract class Station
     ) {}
 
     /**
+     * The station's live audio.
+     */
+    abstract public function streamUrl(): string;
+
+    /**
      * Recent songs, newest first. Each subclass calls its own API here.
      *
      * @return list<array{title: string, artist: string, image: string, start: int|float, end: int|float}>

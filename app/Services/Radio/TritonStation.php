@@ -17,6 +17,11 @@ class TritonStation extends Station
         parent::__construct($name, $frequency);
     }
 
+    public function streamUrl(): string
+    {
+        return "https://playerservices.streamtheworld.com/api/livestream-redirect/{$this->mount}.mp3";
+    }
+
     protected function tracks(int $limit): array
     {
         $xml = Http::timeout(5)

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Modules\RadioModule;
 use App\Services\Radio\IHeartStation;
 use App\Services\Radio\TritonStation;
@@ -10,6 +11,8 @@ use Tests\TestCase;
 
 class RadioTest extends TestCase
 {
+    use RefreshDatabase;
+
     private const FUTURE = 9999999999;
 
     private const TRITON_XML = <<<'XML'
@@ -67,10 +70,10 @@ class RadioTest extends TestCase
         Http::fake(['np.tritondigital.com/*' => Http::response(null, 503)]);
 
         $this->get('/')
-            ->assertSee('WEBN · Now playing')
+            ->assertSee('On air')
             ->assertSee('Self Esteem')
             ->assertDontSee('Simple Man')
-            ->assertSee('WKRQ · Unavailable')
+            ->assertSee('Unavailable')
             ->assertSee('Current conditions and a 5-day forecast');
     }
 

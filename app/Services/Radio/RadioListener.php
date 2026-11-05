@@ -50,7 +50,7 @@ class RadioListener
     }
 
     /**
-     * What a viewer can see change: each station's song and whether it is still playing.
+     * What a viewer can see change: each song, if it is still playing, and if it has a preview yet.
      *
      * @param  array{stations: list<array{station: Station, tracks?: array, error?: string}>}  $card
      */
@@ -59,7 +59,7 @@ class RadioListener
         return json_encode(array_map(function (array $item) {
             $track = $item['tracks'][0] ?? null;
 
-            return [$item['station']->name, $track ? [$track['title'], $track['artist'], $track['playing']] : null];
+            return [$item['station']->name, $track ? [$track['title'], $track['artist'], $track['playing'], isset($track['song'])] : null];
         }, $card['stations']));
     }
 }

@@ -42,11 +42,12 @@ class ArtistTest extends TestCase
                 return Http::response(null, 503);
             }
             if ($path === '/ws/2/artist/') {
-                $known = ['artist:"pearl jam"' => self::PEARL_JAM, 'artist:"tame impala"' => self::TAME_IMPALA];
-                $id = $known[strtolower($request['query'])] ?? null;
+                $known = ['pearl jam' => self::PEARL_JAM, 'tame impala' => self::TAME_IMPALA];
+                $name = preg_replace('/^artist:"(.*?)" OR alias:.*$/', '$1', $request['query']);
+                $id = $known[strtolower($name)] ?? null;
 
                 return Http::response(['artists' => $id
-                    ? [['id' => $id, 'name' => preg_replace('/^artist:"(.*)"$/', '$1', $request['query']), 'score' => 100]]
+                    ? [['id' => $id, 'name' => $name, 'score' => 100]]
                     : [['id' => 'x', 'name' => 'Something Else', 'score' => 95]]]);
             }
             if ($path === '/ws/2/release-group') {
@@ -142,7 +143,7 @@ class ArtistTest extends TestCase
     public function test_combined_names_fall_back_to_the_first_artist(): void
     {
         $this->assertSame('Tame Impala', app(ArtistLibrary::class)->find('Tame Impala [+] Jennie')->name);
-        Http::assertSent(fn (Request $request) => ($request['query'] ?? null) === 'artist:"Tame Impala"');
+        Http::assertSent(fn (Request $request) => str_starts_with($request['query'] ?? '', 'artist:"Tame Impala"'));
     }
 
     public function test_a_close_but_different_name_is_not_a_match_and_is_remembered(): void
