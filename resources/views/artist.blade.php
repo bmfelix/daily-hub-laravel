@@ -5,6 +5,7 @@
 @section('content')
 <article class="artist">
   <header class="artist-hero">
+    @if ($artist['image'])<img class="artist-backdrop" src="{{ $artist['image'] }}" alt="" aria-hidden="true" onerror="this.remove()">@endif
     <div class="artist-photo">
       @if ($artist['image'])
         <img src="{{ $artist['image'] }}" alt="{{ $artist['name'] }}" width="320" height="320" onerror="this.remove()">
@@ -41,6 +42,42 @@
     </div>
   </header>
 
+  @if ($artist['wikipedia'])
+    <section class="artist-section">
+      <h2>About</h2>
+      <div class="artist-about">
+        <p>{{ $artist['wikipedia']['lead'] }}</p>
+        @if ($artist['wikipedia']['rest'])
+          <details>
+            <summary>Read more</summary>
+            @foreach (explode("\n", $artist['wikipedia']['rest']) as $paragraph)
+              @if (trim($paragraph) !== '')<p>{{ $paragraph }}</p>@endif
+            @endforeach
+          </details>
+        @endif
+      </div>
+      <p class="meta">From <a href="{{ $artist['wikipedia']['url'] }}" rel="noopener" target="_blank">{{ $artist['wikipedia']['title'] }} on Wikipedia</a>, under <a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener" target="_blank">CC BY-SA 4.0</a>.</p>
+    </section>
+  @endif
+
+  @if ($artist['songs']->isNotEmpty())
+    <section class="artist-section">
+      <h2>Heard on the radio</h2>
+      <ul class="songs">
+        @foreach ($artist['songs'] as $song)
+          <li>
+            <span class="art">@if ($song->artwork_url)<img src="{{ $song->artwork_url }}" alt="" width="64" height="64" loading="lazy">@endif</span>
+            <div class="track-text">
+              <strong>{{ $song->title }}</strong>
+              @if ($song->album)<span class="meta">{{ $song->album }}</span>@endif
+            </div>
+            @include('partials.song-player', ['song' => $song])
+          </li>
+        @endforeach
+      </ul>
+    </section>
+  @endif
+
   @foreach (['Members' => $artist['members'], 'Member of' => $artist['member_of']] as $heading => $people)
     @if ($people)
       <section class="artist-section">
@@ -71,13 +108,14 @@
             @foreach ($section['releases'] as $release)
               <li>
                 <a href="https://musicbrainz.org/release-group/{{ $release['mbid'] }}" rel="noopener" target="_blank">
-                  <span class="cover">
-                    <img src="{{ $release['cover'] }}" alt="" width="250" height="250" loading="lazy" onerror="this.remove()">
+                  <span class="cover-sleeve"><span class="cover">
+                    <img src="{{ $release['cover'] }}" data-fallback="{{ $release['apple_artwork'] }}" alt="" width="250" height="250" loading="lazy" onerror="if (this.dataset.fallback) { this.src = this.dataset.fallback; this.dataset.fallback = ''; } else { this.remove(); }">
                     <span class="cover-fallback" aria-hidden="true">♪</span>
-                  </span>
+                  </span></span>
                   <strong>{{ $release['title'] }}</strong>
                   <span class="meta">{{ $release['year'] ?: 'Year unknown' }}</span>
                 </a>
+                @if ($release['apple_url'])<a class="meta cover-source" href="{{ $release['apple_url'] }}" rel="noopener" target="_blank">Apple Music</a>@endif
               </li>
             @endforeach
           </ul>
@@ -135,6 +173,6 @@
     </div>
   </section>
 
-  <p class="source">Data from MusicBrainz, saved {{ $artist['fetched_at']->format('j M Y') }}. Photo from Wikimedia Commons, covers from the Cover Art Archive.</p>
+  <p class="source">Data from MusicBrainz, saved {{ $artist['fetched_at']->format('j M Y') }}. Photo from Wikimedia Commons, covers from the Cover Art Archive and Apple Music.</p>
 </article>
 @endsection

@@ -14,6 +14,15 @@ class TodoModule extends HubModule
 
     public string $summary = 'A simple task list saved in the database.';
 
+    public string $cardView = 'cards.todo';
+
+    public function card(): array
+    {
+        $tasks = Task::where('done', false)->latest()->orderByDesc('id');
+
+        return ['openTasks' => (clone $tasks)->limit(4)->get(), 'openCount' => (clone $tasks)->count()];
+    }
+
     public function load(Request $request): array
     {
         return ['tasks' => Task::orderBy('done')->latest()->orderByDesc('id')->get()];

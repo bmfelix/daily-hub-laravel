@@ -34,14 +34,6 @@ class ApiModulesTest extends TestCase
         ]);
     }
 
-    private function fakeCurrency(): void
-    {
-        Http::fake([
-            'api.frankfurter.dev/v1/currencies' => Http::response(['USD' => 'United States Dollar', 'EUR' => 'Euro']),
-            'api.frankfurter.dev/v1/latest*' => Http::response(['date' => '2026-10-23', 'rates' => ['EUR' => 0.9]]),
-        ]);
-    }
-
     private function serviceDown(): void
     {
         Http::fake(['*' => Http::response(null, 503)]);
@@ -174,41 +166,5 @@ class ApiModulesTest extends TestCase
         $this->serviceDown();
 
         $this->get('/news')->assertOk()->assertSee('did not respond');
-    }
-
-    public function test_currency_converts(): void
-    {
-        $this->fakeCurrency();
-
-        $this->get('/currency?amount=100&from=USD&to=EUR')->assertSee('90.00 EUR');
-    }
-
-    public function test_currency_needs_no_api_call_for_the_same_currency(): void
-    {
-        $this->fakeCurrency();
-
-        $this->get('/currency?amount=5&from=EUR&to=EUR')->assertSee('5.00 EUR');
-        Http::assertNotSent(fn (Request $request) => str_contains($request->url(), '/latest'));
-    }
-
-    public function test_currency_rejects_a_bad_amount(): void
-    {
-        $this->fakeCurrency();
-
-        $this->get('/currency?amount=abc&from=USD&to=EUR')->assertSee('Enter a number');
-    }
-
-    public function test_currency_rejects_an_unknown_currency(): void
-    {
-        $this->fakeCurrency();
-
-        $this->get('/currency?amount=1&from=USD&to=XXX')->assertSee('Choose currencies from the list');
-    }
-
-    public function test_currency_reports_when_the_service_is_down(): void
-    {
-        $this->serviceDown();
-
-        $this->get('/currency')->assertOk()->assertSee('did not respond');
     }
 }

@@ -3,6 +3,7 @@
 @section('title', $module->title)
 
 @section('content')
+  <p class="kicker">Liner notes</p>
   <h1>{{ $module->title }}</h1>
 
   <div class="split">

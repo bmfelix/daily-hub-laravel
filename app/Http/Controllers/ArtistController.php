@@ -54,6 +54,10 @@ class ArtistController extends Controller
             }
         }
 
+        if ($artist->extras_checked_at === null) {
+            $this->library->addExtras($artist);
+        }
+
         return response()->view('artist', ['artist' => ArtistProfile::from($artist)]);
     }
 }

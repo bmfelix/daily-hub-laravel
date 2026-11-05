@@ -14,6 +14,13 @@ class NotesModule extends HubModule
 
     public string $summary = 'Write, edit, and delete short notes.';
 
+    public string $cardView = 'cards.notes';
+
+    public function card(): array
+    {
+        return ['latest' => Note::latest('updated_at')->orderByDesc('id')->first()];
+    }
+
     public function load(Request $request): array
     {
         return [

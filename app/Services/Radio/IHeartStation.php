@@ -16,6 +16,11 @@ class IHeartStation extends Station
         parent::__construct($name, $frequency);
     }
 
+    public function streamUrl(): string
+    {
+        return "https://stream.revma.ihrhls.com/zc{$this->stationId}";
+    }
+
     protected function tracks(int $limit): array
     {
         $items = Http::timeout(5)

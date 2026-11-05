@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Events\SongChanged;
 use App\Services\Radio\RadioListener;
 use Illuminate\Broadcasting\Channel;
@@ -11,6 +12,8 @@ use Tests\TestCase;
 
 class LiveRadioTest extends TestCase
 {
+    use RefreshDatabase;
+
     private const FUTURE = 9999999999;
 
     /** The song the fake iHeart API reports; tests change it between checks. */

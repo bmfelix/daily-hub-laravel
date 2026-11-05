@@ -26,7 +26,9 @@ class DataModulesTest extends TestCase
         $response = $this->get('/')->assertOk();
 
         foreach (app(ModuleRegistry::class)->all() as $module) {
-            $response->assertSee($module->url(), false);
+            if ($module->onHome) {
+                $response->assertSee($module->url(), false);
+            }
         }
     }
 

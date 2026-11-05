@@ -22,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Every page needs the module list for the menu.
-        View::composer('*', fn ($view) => $view->with('menuModules', $this->app->make(ModuleRegistry::class)->all()));
+        View::composer('*', fn ($view) => $view->with('menuModules', array_filter(
+            $this->app->make(ModuleRegistry::class)->all(),
+            fn ($module) => $module->inMenu,
+        )));
     }
 }

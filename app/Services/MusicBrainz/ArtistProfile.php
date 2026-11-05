@@ -3,6 +3,7 @@
 namespace App\Services\MusicBrainz;
 
 use App\Models\Artist;
+use App\Services\Music\MusicClient;
 
 /**
  * Turns a saved artist record into what the artist page shows.
@@ -92,12 +93,16 @@ class ArtistProfile
         }
 
         $sections = array_fill_keys(self::RELEASE_SECTIONS, []);
+        $appleAlbums = $artist->apple_albums ?? [];
         foreach ($artist->release_groups as $group) {
+            $apple = $appleAlbums[MusicClient::albumKey($group['title'])] ?? [];
             $sections[self::releaseSection($group)][] = [
                 'title' => $group['title'],
                 'year' => self::year($group['first-release-date'] ?? null),
                 'mbid' => $group['id'],
                 'cover' => "https://coverartarchive.org/release-group/{$group['id']}/front-250",
+                'apple_artwork' => $apple['artwork'] ?? '',
+                'apple_url' => $apple['url'] ?? '',
             ];
         }
         $discography = [];
@@ -136,7 +141,9 @@ class ArtistProfile
             'genres' => $genres,
             'tags' => array_slice($tags, 0, 12),
             'aliases' => $aliases,
-            'image' => $image,
+            'image' => $image ?: ($artist->wikipedia_image ?: null),
+            'wikipedia' => self::wikipedia($artist),
+            'songs' => $artist->exists ? $artist->songs : collect(),
             'members' => $members,
             'member_of' => $memberOf,
             'related' => $related,
@@ -153,6 +160,23 @@ class ArtistProfile
             'ipis' => $data['ipis'] ?? [],
             'musicbrainz_url' => "https://musicbrainz.org/artist/{$artist->mbid}",
             'fetched_at' => $artist->fetched_at,
+        ];
+    }
+
+    /**
+     * The first paragraph to show straight away, and the rest behind "Read more".
+     *
+     * @return array{title: string, url: string, lead: string, rest: string}|null
+     */
+    private static function wikipedia(Artist $artist): ?array
+    {
+        $parts = explode("\n", trim((string) $artist->wikipedia_summary), 2);
+
+        return $parts[0] === '' ? null : [
+            'title' => $artist->wikipedia_title,
+            'url' => $artist->wikipedia_url,
+            'lead' => $parts[0],
+            'rest' => trim($parts[1] ?? ''),
         ];
     }
 

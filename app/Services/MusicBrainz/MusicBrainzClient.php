@@ -31,7 +31,10 @@ class MusicBrainzClient
      */
     public function searchArtists(string $name, int $limit = 5): array
     {
-        return $this->get('artist/', ['query' => "artist:\"{$name}\"", 'limit' => $limit])['artists'];
+        // "artist" only searches the main name, so "alias" is needed for names like "Matchbox 20".
+        $quoted = str_replace(['\\', '"'], ['\\\\', '\\"'], $name);
+
+        return $this->get('artist/', ['query' => "artist:\"{$quoted}\" OR alias:\"{$quoted}\"", 'limit' => $limit])['artists'];
     }
 
     /**

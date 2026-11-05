@@ -3,15 +3,16 @@
 @section('title', $module->title)
 
 @section('content')
+  <p class="kicker">Today's headliners</p>
   <h1>{{ $module->title }}</h1>
 
   @isset($error)
     <p class="notice">{{ $error }}</p>
   @else
-    <ol class="list">
+    <ol class="headlines">
       @foreach ($stories as $story)
-        <li class="panel">
-          <a href="{{ $story['url'] }}" rel="noopener" target="_blank">{{ $story['title'] }}</a>
+        <li>
+          <a class="headline" href="{{ $story['url'] }}" rel="noopener" target="_blank">{{ $story['title'] }}</a>
           <span class="meta">{{ $story['points'] }} points · by {{ $story['author'] }} · <a href="{{ $story['discussion'] }}" rel="noopener" target="_blank">{{ $story['comments'] }} comments</a></span>
         </li>
       @endforeach
