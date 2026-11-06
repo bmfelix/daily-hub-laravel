@@ -104,7 +104,7 @@ tailscale serve --bg --https=8010 http://127.0.0.1:8002
 tailscale serve --bg --https=8082 http://127.0.0.1:8082
 ```
 
-The browser connects to Reverb at whatever address the page was opened from, on `REVERB_PUBLIC_PORT`.
+The browser connects to Reverb at whatever address the page was opened from, on `REVERB_PUBLIC_PORT`. If Reverb has its own domain, set `REVERB_PUBLIC_HOST` to it.
 
 Stop it with `docker compose down`.
 
