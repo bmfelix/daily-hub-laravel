@@ -56,7 +56,8 @@
       const echo = new EchoClass({
         broadcaster: 'reverb',
         key: reverb.key,
-        wsHost: window.location.hostname, // works from any address the site is opened at
+        // "localhost" means Reverb shares the page's address, whichever one the site is opened at.
+        wsHost: reverb.host === 'localhost' ? window.location.hostname : reverb.host,
         wsPort: reverb.port,
         wssPort: reverb.port,
         forceTLS: window.location.protocol === 'https:',
