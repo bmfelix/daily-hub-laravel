@@ -2,6 +2,7 @@
 
 use App\Modules\AboutModule;
 use App\Modules\AgendaModule;
+use App\Modules\BratModule;
 use App\Modules\BuiltModule;
 use App\Modules\ChartsModule;
 use App\Modules\ConcertsModule;
@@ -27,6 +28,7 @@ return [
         ChartsModule::class,
         ConcertsModule::class,
         ListeningModule::class,
+        BratModule::class,
         AboutModule::class,
         BuiltModule::class,
     ],

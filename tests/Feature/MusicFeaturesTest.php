@@ -9,6 +9,7 @@ use App\Models\Play;
 use App\Models\Song;
 use App\Models\SpotifyAccount;
 use App\Models\Task;
+use App\Modules\BratModule;
 use App\Modules\RadioModule;
 use App\Services\CalendarClient;
 use App\Services\Music\MusicClient;
@@ -600,6 +601,21 @@ class MusicFeaturesTest extends TestCase
             ->assertSee('<a href="https://one.test">Django</a>', false)
             ->assertSee('<a href="https://two.test">Next.js</a>', false)
             ->assertSee('<th scope="col">Laravel</th>', false);
+    }
+
+    public function test_brat_page_describes_the_add_on_and_links_its_code(): void
+    {
+        $this->get('/brat')
+            ->assertOk()
+            ->assertSee('Rotation Assistant')
+            ->assertSee('Learn from Blizzard')
+            ->assertSee('https://github.com/bmfelix/BRAT');
+    }
+
+    public function test_brat_page_is_in_the_menu_not_on_the_homepage(): void
+    {
+        $this->get('/todo')->assertSee('href="'.url('/brat').'"', false);
+        $this->assertFalse((new BratModule)->onHome);
     }
 
     public function test_built_page_is_in_the_footer_not_the_menu(): void
