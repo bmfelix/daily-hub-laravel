@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Modules\WeatherModule;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -11,6 +12,13 @@ use Tests\TestCase;
  */
 class ApiModulesTest extends TestCase
 {
+    private const NEWS_RSS = <<<'XML'
+        <?xml version="1.0"?><rss version="2.0"><channel><title>Top stories</title>
+        <item><title>Big story - BBC</title><link>https://news.google.com/a</link><pubDate>Tue, 10 Nov 2026 01:38:49 GMT</pubDate><source url="https://www.bbc.com">BBC</source></item>
+        <item><title>Second - NPR</title><link>https://news.google.com/b</link><pubDate>Tue, 10 Nov 2026 01:00:00 GMT</pubDate><source url="https://www.npr.org">NPR</source></item>
+        </channel></rss>
+        XML;
+
     private function fakeWeather(): void
     {
         Http::fake([
@@ -52,6 +60,19 @@ class ApiModulesTest extends TestCase
             ->assertSee('Light rain');
 
         Http::assertSent(fn (Request $request) => str_contains($request->url(), 'temperature_unit=celsius'));
+    }
+
+    public function test_weather_page_and_each_day_follow_the_sky(): void
+    {
+        $this->fakeWeather();
+
+        $response = $this->get('/weather?city=Paris')->assertSee('class="theme-weather sky-cloudy"', false);
+
+        $this->assertSame(['clear', 'rain'], array_column($response->viewData('days'), 'sky'));
+        $this->assertSame(
+            ['clear', 'cloudy', 'fog', 'rain', 'snow', 'storm'],
+            array_map(WeatherModule::sky(...), [0, 3, 45, 63, 75, 95]),
+        );
     }
 
     public function test_weather_uses_fahrenheit_and_mph_in_the_united_states(): void
@@ -147,18 +168,24 @@ class ApiModulesTest extends TestCase
         $this->get('/weather')->assertOk()->assertSee('did not respond');
     }
 
-    public function test_news_lists_stories(): void
+    public function test_news_lists_stories_with_the_source_on_its_own_line(): void
     {
-        Http::fake(['hn.algolia.com/*' => Http::response(['hits' => [
-            ['objectID' => '1', 'title' => 'With link', 'url' => 'https://example.com', 'points' => 10, 'num_comments' => 3, 'author' => 'ann'],
-            ['objectID' => '2', 'title' => 'Ask HN', 'url' => null, 'points' => null, 'num_comments' => null, 'author' => 'bob'],
-        ]])]);
+        Http::fake(['news.google.com/*' => Http::response(self::NEWS_RSS)]);
 
         $response = $this->get('/news')->assertOk();
 
-        $response->assertSee('href="https://example.com"', false);
-        $this->assertSame('https://news.ycombinator.com/item?id=2', $response->viewData('stories')[1]['url']);
-        $this->assertSame(0, $response->viewData('stories')[1]['comments']);
+        $response->assertSee('href="https://news.google.com/a"', false)->assertSee('>Big story</a>', false)->assertSee('BBC');
+        $stories = $response->viewData('stories');
+        $this->assertSame('Second', $stories[1]['title']);
+        $this->assertSame('NPR', $stories[1]['source']);
+        $this->assertSame(2026, $stories[0]['published']->year);
+    }
+
+    public function test_news_reports_a_broken_feed(): void
+    {
+        Http::fake(['news.google.com/*' => Http::response('not xml')]);
+
+        $this->get('/news')->assertOk()->assertSee('did not respond');
     }
 
     public function test_news_reports_when_the_service_is_down(): void

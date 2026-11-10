@@ -18,6 +18,18 @@ abstract class Station
     abstract public function streamUrl(): string;
 
     /**
+     * Where the station sits on an 88-108 FM dial, from 0 to 100. Reads the last number in the frequency.
+     */
+    public function dial(): float
+    {
+        if (! preg_match_all('/\d+(?:\.\d+)?/', $this->frequency, $matches)) {
+            return 50.0;
+        }
+
+        return round(min(max(((float) end($matches[0]) - 88) / 20 * 100, 0), 100), 1);
+    }
+
+    /**
      * Recent songs, newest first. Each subclass calls its own API here.
      *
      * @return list<array{title: string, artist: string, image: string, start: int|float, end: int|float}>

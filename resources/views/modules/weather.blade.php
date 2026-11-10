@@ -3,6 +3,9 @@
 @section('title', $module->title)
 
 @section('content')
+<link rel="stylesheet" href="{{ asset('css/weather.css') }}">
+<div class="theme-weather sky-{{ $current['sky'] ?? 'clear' }}">
+  @include('partials.sky')
   <p class="kicker">Outside the venue</p>
   <h1>{{ $module->title }}</h1>
 
@@ -16,6 +19,7 @@
     <p class="notice">{{ $error }}</p>
   @else
     <section class="sky">
+      <svg class="wx-icon wx-big" aria-hidden="true"><use href="#wx-{{ $current['sky'] }}"/></svg>
       <h2>{{ $place['name'] }}@isset($place['country']), {{ $place['country'] }}@endisset</h2>
       <p class="big">{{ $current['temperature'] }}{{ $temperature_unit }}</p>
       <p>{{ $current['label'] }} · Feels like {{ $current['feels_like'] }}{{ $temperature_unit }} · Wind {{ $current['wind'] }} {{ $wind_unit }}</p>
@@ -26,7 +30,7 @@
       @foreach ($days as $day)
         <li>
           <strong>{{ $day['weekday'] }}</strong>
-          <span>{{ $day['label'] }}</span>
+          <span class="wx-label"><svg class="wx-icon" aria-hidden="true"><use href="#wx-{{ $day['sky'] }}"/></svg>{{ $day['label'] }}</span>
           <span class="range" aria-hidden="true"><span style="left: {{ $day['bar_start'] }}%; width: {{ $day['bar_width'] }}%"></span></span>
           <span class="temps">{{ $day['low'] }}° / {{ $day['high'] }}°</span>
         </li>
@@ -48,4 +52,5 @@
       }, () => {}, { maximumAge: 600000, timeout: 10000 });
     </script>
   @endunless
+</div>
 @endsection

@@ -3,6 +3,8 @@
 @section('title', $module->title)
 
 @section('content')
+<div class="theme-radio">
+  @include('partials.airwaves')
   <p class="kicker">Now spinning in Cincinnati</p>
   <h1>{{ $module->title }}</h1>
 
@@ -16,6 +18,9 @@
             @include('partials.live-button', ['station' => $item['station']])
           </span>
         </header>
+        <div class="tuner" aria-hidden="true">
+          <div class="tuner-band"><span>88</span><span>92</span><span>96</span><span>100</span><span>104</span><span>108</span><span class="tuner-needle" style="left: {{ $item['station']->dial() }}%"></span></div>
+        </div>
         @isset($item['error'])
           <p class="notice">{{ $item['error'] }}</p>
         @else
@@ -43,4 +48,5 @@
   </div>
 
   <p class="source">Data: iHeartRadio (WEBN) and Triton Digital (WKRQ). Times are Cincinnati time. Previews from Apple Music and Deezer. Live audio comes straight from each station and includes its ads.</p>
+</div>
 @endsection

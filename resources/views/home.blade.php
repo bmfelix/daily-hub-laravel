@@ -5,7 +5,7 @@
 @section('content')
   <header class="home-intro">
     <p class="kicker">{{ now()->format('l, F j') }}</p>
-    <h1>Your day, <em>on repeat.</em></h1>
+    <h1>My day, <em>on repeat.</em></h1>
   </header>
 
   <div class="board">
