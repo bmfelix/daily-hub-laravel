@@ -75,6 +75,7 @@ class WeatherModule extends HubModule
                 'date' => $date,
                 'weekday' => date('D', strtotime($date)),
                 'label' => $this->label($daily['weather_code'][$i]),
+                'sky' => self::sky($daily['weather_code'][$i]),
                 'high' => $high,
                 'low' => $low,
                 // Where this day's range sits on a bar covering the whole week.
@@ -93,6 +94,7 @@ class WeatherModule extends HubModule
                 'feels_like' => $current['apparent_temperature'],
                 'wind' => $current['wind_speed_10m'],
                 'label' => $this->label($current['weather_code']),
+                'sky' => self::sky($current['weather_code']),
             ],
             'days' => $days,
         ];
@@ -114,6 +116,21 @@ class WeatherModule extends HubModule
         return abs((float) $latitude) <= 90 && abs((float) $longitude) <= 180
             ? [(float) $latitude, (float) $longitude]
             : null;
+    }
+
+    /**
+     * The kind of sky a weather code means, for the page's look and the day icons.
+     */
+    public static function sky(int $code): string
+    {
+        return match (true) {
+            in_array($code, [0, 1], true) => 'clear',
+            in_array($code, [45, 48], true) => 'fog',
+            ($code >= 71 && $code <= 77) || in_array($code, [85, 86], true) => 'snow',
+            $code >= 95 => 'storm',
+            ($code >= 51 && $code <= 67) || ($code >= 80 && $code <= 82) => 'rain',
+            default => 'cloudy',
+        };
     }
 
     private function label(int $code): string

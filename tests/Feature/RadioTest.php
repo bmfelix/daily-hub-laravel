@@ -31,6 +31,12 @@ class RadioTest extends TestCase
         ]])]);
     }
 
+    public function test_dial_places_the_station_on_the_fm_band(): void
+    {
+        $this->assertSame(73.5, (new IHeartStation('WEBN', '102.7 FM', 1701))->dial());
+        $this->assertSame(69.5, (new TritonStation('WKRQ', 'Q102 · 101.9 FM', 'WKRQFM'))->dial());
+    }
+
     public function test_iheart_maps_history_and_uses_https_images(): void
     {
         $this->fakeIHeart();

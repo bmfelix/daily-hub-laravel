@@ -3,6 +3,8 @@
 @section('title', $module->title)
 
 @section('content')
+<div class="theme-radio">
+  @include('partials.airwaves')
   <p class="kicker">The weekly countdown</p>
   <h1>{{ $module->title }}</h1>
 
@@ -56,4 +58,5 @@
   @endforelse
 
   <p class="source">Counted by Daily Hub from each station's song feed, from the day tracking began.</p>
+</div>
 @endsection

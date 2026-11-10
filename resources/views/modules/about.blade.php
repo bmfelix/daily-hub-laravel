@@ -3,7 +3,10 @@
 @section('title', $module->title)
 
 @section('content')
-  <p class="kicker">Meet the band</p>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500..700;1,500..700&family=EB+Garamond:ital,wght@0,400..600;1,400..600&display=swap">
+<link rel="stylesheet" href="{{ asset('css/score.css') }}">
+<div class="theme-score">
+  <p class="kicker">Composed by</p>
   <h1>{{ $profile['name'] ?: $module->title }}</h1>
 
   @if ($profile['headline'])<p class="about-headline">{{ $profile['headline'] }}</p>@endif
@@ -50,4 +53,5 @@
       </ul>
     </section>
   @endif
+</div>
 @endsection

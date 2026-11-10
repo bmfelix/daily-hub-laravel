@@ -291,7 +291,7 @@ class MusicFeaturesTest extends TestCase
 
     public function test_a_module_can_return_just_its_card(): void
     {
-        Http::fake(['hn.algolia.com/*' => Http::response(['hits' => [['objectID' => '1', 'title' => 'Big story', 'url' => 'https://example.com', 'points' => 1, 'num_comments' => 1, 'author' => 'ann']]])]);
+        Http::fake(['news.google.com/*' => Http::response('<rss><channel><item><title>Big story - BBC</title><link>https://example.com</link><source>BBC</source></item></channel></rss>')]);
 
         $this->get('/news?card=1')->assertSee('Big story')->assertDontSee('<html', false);
     }
